@@ -1,12 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.integrate as integrate
 
 domain_left = 0
 domain_right = 2
 domain_length = domain_right - domain_left
 # number of finite elements, must be greater than 2
-fe_number = 8
-integration_step = 1/1000
+fe_number = 10
+integration_step = 1 / 10000
 h = domain_length / fe_number
 h_inv = 1 / h
 
@@ -29,7 +30,12 @@ Function performs numerical integration using trapezoidal rule.
 
 
 def E(x):
-    return 3 if 0 <= x <= 1 else 5 if 1 < x <= 2 else None
+    if 0 <= x <= 1:
+        return 3
+    elif 1 < x <= 2.1:
+        return 5
+    else:
+        pass
 
 
 def basis_function_value(i, x):
@@ -67,7 +73,7 @@ def basis_function_derivative(i, x):
 
 
 def plot(result):
-    x = np.linspace(domain_left, domain_right, fe_number+1)
+    x = np.linspace(domain_left, domain_right, fe_number + 1)
     plt.plot(x, result)
     plt.show()
 
@@ -84,8 +90,10 @@ def solve():
                 integrate_from = domain_length * max(max(n, m) - 1, 0) / fe_number
                 integrate_to = domain_length * min(min(n, m) + 1, fe_number) / fe_number
 
-                integrand = lambda x: E(x) * basis_function_derivative(n, x) * basis_function_derivative(m, x)
-                integral = integrate_trapezoidal(integrand, integrate_from, integrate_to, integration_step)
+                def integrand(x): return E(x) * basis_function_derivative(n, x) * basis_function_derivative(m, x)
+
+                # integral = integrate_trapezoidal(integrand, integrate_from, integrate_to, integration_step)
+                integral, _ = integrate.quad(integrand, integrate_from, integrate_to)
 
             b_matrix[n, m] = -E(0) * basis_function_value(n, 0) * basis_function_value(m, 0) + integral
 
