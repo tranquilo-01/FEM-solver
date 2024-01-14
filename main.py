@@ -1,14 +1,15 @@
 import matplotlib.pyplot as plt
-import numpy
 import numpy as np
 import scipy.integrate as integrate
 
 domain_left = 0
 domain_right = 2
 domain_length = domain_right - domain_left
+# FIXME some combinations of fe_number and integration_step give weird results
+# mostly occurs when fe_number is big and integration step is also big
 # number of finite elements, must be greater than 2
-fe_number = 5
-integration_step = 1 / 1000
+fe_number = 32
+integration_step = 1 / 100000
 asc_slope_basis = domain_length / fe_number
 desc_slope_basis = 1 / asc_slope_basis
 
@@ -34,9 +35,9 @@ Function performs numerical integration using trapezoidal rule.
             integral_value += (a + b) * integration_step / 2
         i += integration_step
 
-    scipy_value = integrate.quad(f, lower_bound, upper_bound)
+    # scipy_value = integrate.quad(f, lower_bound, upper_bound)
 
-    print("my value: ", integral_value, "scipy value: ", scipy_value, "diff: ", abs(integral_value - scipy_value[0]))
+    # print("my value: ", integral_value, "scipy value: ", scipy_value, "diff: ", abs(integral_value - scipy_value[0]))
     return integral_value
 
 
@@ -104,8 +105,8 @@ def solve():
 
                 def integrand(x): return E(x) * basis_function_derivative(n, x) * basis_function_derivative(m, x)
 
-                # integral = integrate_trapezoidal(integrand, integrate_from, integrate_to)
-                integral, _ = integrate.quad(integrand, integrate_from, integrate_to)
+                integral = integrate_trapezoidal(integrand, integrate_from, integrate_to)
+                # integral, _ = integrate.quad(integrand, integrate_from, integrate_to)
 
             b_matrix[n, m] = -E(0) * basis_function_value(n, 0) * basis_function_value(m, 0) + integral
 
@@ -113,37 +114,41 @@ def solve():
     l_vector = np.zeros(fe_number)
     l_vector[0] = -10 * E(0) * basis_function_value(0, 0)
 
-    print(b_matrix)
-    print(l_vector)
+    # print(b_matrix)
+    # print(l_vector)
 
     # Calculate coefficients
-    coefficients = np.linalg.solve(b_matrix, l_vector)
-    gaussian_elimination(b_matrix, l_vector)
+    # coefficients = np.linalg.solve(b_matrix, l_vector)
+    coefficients = gaussian_elimination(b_matrix, l_vector)
 
     result = np.concatenate((coefficients, [0]))
-    print(result)
+    # print(result)
     return result
 
 
 def gaussian_elimination(matrix, vector):
+    """
+    Functions solves a linear matrix equation, optimized for FEM.
+    :param matrix: coefficient matrix
+    :param vector: dependent variable vector
+    :return: solution to matrix*x=vector
+    """
     n = matrix.shape[0]
-    for row in range(n-1):
+    for row in range(n - 1):
         col = row
-        ratio = matrix[row+1, col] / matrix[row, row]
+        ratio = matrix[row + 1, col] / matrix[row, row]
         for k in range(n):
-            matrix[row+1][k] = matrix[row+1][k] - ratio*matrix[row][k]
-        vector[row+1] = vector[row+1] - ratio*vector[row]
-    print(matrix)
-    print(vector)
+            matrix[row + 1][k] = matrix[row + 1][k] - ratio * matrix[row][k]
+        vector[row + 1] = vector[row + 1] - ratio * vector[row]
 
     res = np.zeros(n)
-    res[n-1] = vector[n-1]/matrix[n-1, n-1]
-    for m in range(n-2, -1, -1):
-        ratio = matrix[m, m+1] / matrix[m+1, m+1]
-        matrix[m, m+1] = matrix[m, m+1] - ratio * matrix[m+1, m+1]
-        vector[m] = vector[m] - ratio * vector[m+1]
-        res[m] = vector[m]/matrix[m, m]
-    print(res)
+    res[n - 1] = vector[n - 1] / matrix[n - 1, n - 1]
+    for m in range(n - 2, -1, -1):
+        ratio = matrix[m, m + 1] / matrix[m + 1, m + 1]
+        matrix[m, m + 1] = matrix[m, m + 1] - ratio * matrix[m + 1, m + 1]
+        vector[m] = vector[m] - ratio * vector[m + 1]
+        res[m] = vector[m] / matrix[m, m]
+    return res
 
 
 def test_integration():
@@ -159,4 +164,3 @@ def test_integration():
 
 if __name__ == "__main__":
     plot(solve())
-    # test_integration()
