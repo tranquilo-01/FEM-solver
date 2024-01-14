@@ -109,13 +109,17 @@ def gaussian_elimination(matrix, vector):
 
 
 def plot(result):
+    """
+    Function plots a solution of FEM problem
+    :param result: result vector of FEM problem
+    """
     x = np.linspace(domain_left, domain_right, fe_number + 1)
     plt.plot(x, result)
     plt.xlabel("x")
     plt.ylabel("u(x)")
-    plt.title("Odkształcenie sprężyste")
-    info_box = f"Liczba elementów skończonych: {fe_number}\nKrok całkowania: {integration_step}"
-    plt.annotate(info_box, xy=(0.58, 0.91), xycoords='axes fraction', fontsize=8, bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="white"))
+    plt.title("Elastic deformation")
+    info_box = f"Number of finite elements: {fe_number}\nIntegration step: {integration_step}"
+    plt.annotate(info_box, xy=(0.62, 0.91), xycoords='axes fraction', fontsize=8, bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="white"))
     plt.grid(True)
     plt.yticks(np.arange(result.min(), result.max()+1, 2))
     plt.show()
