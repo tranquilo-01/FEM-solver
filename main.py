@@ -9,7 +9,7 @@ domain_length = domain_right - domain_left
 # mostly occurs when fe_number is big and integration step is also big
 # number of finite elements, must be greater than 2
 fe_number = 32
-integration_step = 1 / 100000
+integration_step = 1 / 1000
 asc_slope_basis = domain_length / fe_number
 desc_slope_basis = 1 / asc_slope_basis
 
@@ -87,7 +87,13 @@ def basis_function_derivative(i, x):
 def plot(result):
     x = np.linspace(domain_left, domain_right, fe_number + 1)
     plt.plot(x, result)
+    plt.xlabel("x")
+    plt.ylabel("u(x)")
+    plt.title("Odkształcenie sprężyste")
+    info_box = f"Liczba elementów skończonych: {fe_number}\nKrok całkowania: {integration_step}"
+    plt.annotate(info_box, xy=(0.58, 0.91), xycoords='axes fraction', fontsize=8, bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="white"))
     plt.grid(True)
+    plt.yticks(np.arange(result.min(), result.max()+1, 2))
     plt.show()
 
 
